@@ -32,6 +32,13 @@ namespace PlaywrightReqnrollUIDotNet.Pages
                                             new() { Name = "Money Market", Description = "Money Market", Exact = true });
         public ILocator _cdLink => _page.GetByRole(AriaRole.Link, new() { Name = "CD" });
         public ILocator _iraLink => _page.GetByRole(AriaRole.Link, new() { Name = "IRA" });
+        
+        public ILocator _planningInvestingMenu => _page.GetByRole(AriaRole.Link, new() { Name = "Planning & Investing" });
+        public ILocator _investmentServicesLink => _page.GetByRole(AriaRole.Link,
+                                    new() { Name = "Investment Services", Description = "Investment Management", Exact = true });
+
+
+
 
         //Carousel
         public ILocator _carousel => _page.GetByRole(AriaRole.Region, 
