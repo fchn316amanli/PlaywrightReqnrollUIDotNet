@@ -16,7 +16,8 @@ Scenario: EVERYDAY BANKING of dropdown menu displays savings shares
 	Then savings shares are displayed
 
 @smoke
-Scenario: Featured promotions slider is displayed
+@CarouselTest
+Scenario: Featured promotions slider displays properly
 	When the user plays a button of slide on featured promotions slider
 	Then the slides of featured promotions slider are displayed properly
 
@@ -29,3 +30,21 @@ Scenario: Business Banking on secondary-promo launches Business Banking page
 Scenario: Contact on footer menu launches Contact page
 	When the user selects Contact on footer menu
 	Then Contact page is launched
+
+@Regression
+@CarouselTest
+Scenario: Featured promotions slides can be looped by selecting Next Button
+	When the user selects Next Button to loop the featured promotions slides
+	Then the slides of featured promotions slides are looped properly
+
+@Regression
+@CarouselTest
+Scenario: Featured promotions slides can be looped by selecting Previous Button
+	When the user selects Previous Button to loop the featured promotions slides
+	Then the slides of featured promotions slides are looped properly
+
+@Regression
+@CarouselTest
+Scenario: Featured promotions slides can be looped by selecting Slide Button
+	When the user selects Slide Button to loop the featured promotions slides
+	Then the slides of featured promotions slides are looped properly

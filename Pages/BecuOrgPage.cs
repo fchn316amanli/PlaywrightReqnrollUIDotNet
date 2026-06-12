@@ -1,10 +1,5 @@
-﻿using Microsoft.Playwright;
-using PlaywrightReqnrollUIDotNet.Drivers;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using Dynamitey.DynamicObjects;
+using Microsoft.Playwright;
 
 namespace PlaywrightReqnrollUIDotNet.Pages
 {
@@ -25,14 +20,14 @@ namespace PlaywrightReqnrollUIDotNet.Pages
         //dropdown-toggle menu items under Everyday Banking
         public ILocator _savingsHeading => _page.Locator("[class*='mega-dropdown-menu show']")
                                                 .Locator(".head").Filter(new() { HasText = "Savings" });
-        public ILocator _savingsLink => _page.GetByRole(AriaRole.Link, 
+        public ILocator _savingsLink => _page.GetByRole(AriaRole.Link,
                                             new() { Name = "Savings", Description = "Savings", Exact = true });
         public ILocator _youthSavingsLink => _page.GetByRole(AriaRole.Link, new() { Name = "Youth Savings" });
-        public ILocator _moneyMarketLink => _page.GetByRole(AriaRole.Link, 
+        public ILocator _moneyMarketLink => _page.GetByRole(AriaRole.Link,
                                             new() { Name = "Money Market", Description = "Money Market", Exact = true });
         public ILocator _cdLink => _page.GetByRole(AriaRole.Link, new() { Name = "CD" });
         public ILocator _iraLink => _page.GetByRole(AriaRole.Link, new() { Name = "IRA" });
-        
+
         public ILocator _planningInvestingMenu => _page.GetByRole(AriaRole.Link, new() { Name = "Planning & Investing" });
         public ILocator _investmentServicesLink => _page.GetByRole(AriaRole.Link,
                                     new() { Name = "Investment Services", Description = "Investment Management", Exact = true });
@@ -41,18 +36,20 @@ namespace PlaywrightReqnrollUIDotNet.Pages
 
 
         //Carousel
-        public ILocator _carousel => _page.GetByRole(AriaRole.Region, 
+        public ILocator _carousel => _page.GetByRole(AriaRole.Region,
                                     new() { Name = "Featured promotions slider" });
         //Multiple locators in the slide list, but only 4 of them are in use
         //or Locator("[aria-describedby*='slick-slide10']")
         public ILocator _carouselSlideList => _page.Locator("[class*='slick-slide']").Locator("[id*='slick-slide0']");
-        public ILocator _carouselPrevSlideBtn => _page.GetByRole(AriaRole.Button, new() { Name = "Previous slide" } );
+        public ILocator _carouselPrevSlideBtn => _page.GetByRole(AriaRole.Button, new() { Name = "Previous slide" });
         public ILocator _carouselNextSlideBtn => _page.GetByRole(AriaRole.Button, new() { Name = "Next slide" });
         public ILocator _carouselPlayBtn => _page.GetByRole(AriaRole.Img, new() { Name = "Play Slides" });
         public ILocator _carouselPauseBtn => _page.GetByRole(AriaRole.Img, new() { Name = "Pause Slides" });
         public ILocator _carouselSlideBtnList => _page.Locator("[class='slick-dots']").Locator("[aria-controls*='slick-slide0']");
-        public ILocator _carouselSlideBtn3of4 => _page.GetByTitle("slide 3 of 4");
+        //the 3rd showing up slide of all the in-use slides.
+        public ILocator _carouselSlideBtn3of => _page.GetByTitle("slide 3 of ", new() { Exact = false });
         public ILocator _carouselSlideActive => _page.Locator("[class*='slick-active slick-center']");
+        public ILocator _carouselCurrentSlide => _page.Locator("[aria-hidden='false'], [aria-selected='true']").First;
 
         //secondary-promo
         public ILocator _bizBankingHeading => _page.GetByRole(AriaRole.Heading, new() { Name = "Business Banking" });
@@ -71,15 +68,24 @@ namespace PlaywrightReqnrollUIDotNet.Pages
 
         //To-do
         public async Task ClickLoginBtn() => await _loginBtn.ClickAsync();
-        //To-do
-        public async Task example(string username, string password)
+        //Get carousel slides count, may change over time, not all the slides are in-use
+        public async Task<int> GetCarouselSlidesCount()
         {
-            /*
-            await _usernameInput.FillAsync(username);
-            await _passwordInput.FillAsync(password);
-            await _signInBtn.ClickAsync();
-            */
+            var slideList = await _carouselSlideList.AllAsync();
+            //may change over time due to marketing needs
+            Console.WriteLine($"==>Total carousel slides found: {slideList.Count()}");
+            return slideList.Count();
         }
+        //Get carousel slide buttons count, should be equal to slides count
+        public async Task<int> GetCarouselSlideButtonsCount()
+        {
+            var slideBtnList = await _carouselSlideBtnList.AllAsync();
+            Console.WriteLine($"==>Total carousel slide buttons found: {slideBtnList.Count()}");
+            return slideBtnList.Count();
+        }
+      
+        
+
 
     }
 }

@@ -3,9 +3,7 @@ using NUnit.Framework;
 using Reqnroll.Assist.Dynamic;
 using PlaywrightReqnrollUIDotNet.Drivers;
 using PlaywrightReqnrollUIDotNet.Pages;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using static Microsoft.Playwright.Assertions;   
+using static Microsoft.Playwright.Assertions;
 
 namespace PlaywrightReqnrollUIDotNet.StepDefinitions
 {

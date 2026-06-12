@@ -1,9 +1,11 @@
-﻿using Microsoft.Playwright;
+﻿using Dynamitey.DynamicObjects;
+using Microsoft.Playwright;
 using NUnit.Framework;
 using PlaywrightReqnrollUIDotNet.Drivers;
 using PlaywrightReqnrollUIDotNet.Pages;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using static Microsoft.Playwright.Assertions;
 
 namespace PlaywrightReqnrollUIDotNet.StepDefinitions
@@ -13,6 +15,7 @@ namespace PlaywrightReqnrollUIDotNet.StepDefinitions
     {
         private readonly BecuDriver _driver;
         private readonly BecuOrgPage _becuOrgPage;
+        private List<string> slidesInnerTextList  = [];
 
         public BecuOrgSteps(BecuDriver becuDriver)
         {
@@ -100,7 +103,7 @@ namespace PlaywrightReqnrollUIDotNet.StepDefinitions
         [When("the user plays a button of slide on featured promotions slider")]
         public async Task WhenTheUserPlaysAButtonOfSlideOnFeaturedPromotionsSlider()
         {
-            await _becuOrgPage._carouselSlideBtn3of4.ClickAsync();
+            await _becuOrgPage._carouselSlideBtn3of.ClickAsync();
         }
 
         [Then("the slides of featured promotions slider are displayed properly")]
@@ -112,9 +115,9 @@ namespace PlaywrightReqnrollUIDotNet.StepDefinitions
 
             // 2. Convert multiple locators into List, then verify slides count
             var slideList = await _becuOrgPage._carouselSlideList.AllAsync();
-            int slideCount = slideList.Count();
+            int slideCount = slideList.Count();//may change over time due to marketing needs
             Console.WriteLine($"===>Total slides found: {slideCount}");
-            Assert.That(slideCount, Is.EqualTo(4), "slides count in the carousel is wrong");
+            Assert.That(slideCount, Is.GreaterThan(1), "slides count in the carousel is wrong");
 
             // 3. Verify carousel buttons
             await Expect(_becuOrgPage._carouselPrevSlideBtn).ToBeVisibleAsync();
@@ -250,6 +253,87 @@ namespace PlaywrightReqnrollUIDotNet.StepDefinitions
             Assert.That(_driver.Page.Url, Does.Contain("https://www.becu.org/support/contact-us"),
                 "Failed to launch Contact page");
             Thread.Sleep(6000);
+        }
+
+        private async Task SelectNextOrPrevBtnToLoop(string nextOrPrevious)
+        {
+            ILocator nextOrPreviousBtn = null;
+            //reset list, in case conflict in between test cases
+            slidesInnerTextList.Clear(); 
+            if (nextOrPrevious == "Next")
+            {
+                nextOrPreviousBtn = _becuOrgPage._carouselNextSlideBtn;
+            }
+            else if (nextOrPrevious == "Previous")
+            {
+                nextOrPreviousBtn = _becuOrgPage._carouselPrevSlideBtn;
+            }
+            else { throw new ArgumentException("The input string is wrong"); }
+
+            await nextOrPreviousBtn.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Visible });
+            var slidesCount = await _becuOrgPage.GetCarouselSlidesCount();
+            var currentText = await _becuOrgPage._carouselCurrentSlide.InnerTextAsync();
+            var previousText = currentText;
+
+            for (int i = 0; i < slidesCount; i++)
+            {
+                await nextOrPreviousBtn.ClickAsync();
+                currentText = await _becuOrgPage._carouselCurrentSlide.InnerTextAsync();
+                Console.WriteLine($"==> Slide {i + 1}/{slidesCount}: {currentText}");
+                //To create a list of each slide text string, later to verify unique
+                slidesInnerTextList.Add(currentText);
+                //Verify that previous and current texts are different
+                Assert.That(currentText, Is.Not.EqualTo(previousText), "Clicking the carousel Previous/Next button should change the visible slide.");
+                previousText = currentText;
+                await Task.Delay(3000); // Add a short delay to allow the slide transition to complete
+            }
+        }
+
+
+        [When("the user selects Next Button to loop the featured promotions slides")]
+        public async Task WhenTheUserSelectsNextButtonToLoopTheFeaturedPromotionsSlides()
+        {
+            await SelectNextOrPrevBtnToLoop("Next");
+        }
+
+        [Then("the slides of featured promotions slides are looped properly")]
+        public async Task ThenTheSlidesOfFeaturedPromotionsSlidesAreLoopedProperly()
+        {
+            //Verify that the text string of each slide is unique 
+            //In reality, there should be certain text content verification to meet marketing needs
+            bool allUnique = slidesInnerTextList.Distinct().Count() == slidesInnerTextList.Count;
+            Assert.That(allUnique, Is.True, "The text string of each slide should be unique");       
+        }
+
+        [When("the user selects Previous Button to loop the featured promotions slides")]
+        public async Task WhenTheUserSelectsPreviousButtonToLoopTheFeaturedPromotionsSlides()
+        {
+            await SelectNextOrPrevBtnToLoop("Previous");
+        }
+
+        [When("the user selects Slide Button to loop the featured promotions slides")]
+        public async Task WhenTheUserSelectsSlideButtonToLoopTheFeaturedPromotionsSlides()
+        {
+            //reset list, in case conflict in between test cases
+            slidesInnerTextList.Clear();
+
+            var slideBtnsCount = await _becuOrgPage.GetCarouselSlideButtonsCount();
+            var currentText = await _becuOrgPage._carouselCurrentSlide.InnerTextAsync();
+            var previousText = currentText;
+
+            //starting from high to differentiate with the previousText, which is the first slide
+            for (int i = slideBtnsCount-1; i >= 0; i--)
+            {
+                //Nth start from 0, so the 5th button is 4
+                await _becuOrgPage._carouselSlideBtnList.Nth(i).ClickAsync();
+                currentText = await _becuOrgPage._carouselCurrentSlide.InnerTextAsync();
+                Console.WriteLine($"==> After clicking button {i}/{slideBtnsCount}: {currentText}");
+                //To create a list of each slide text string, later to verify unique
+                slidesInnerTextList.Add(currentText);
+                Assert.That(currentText, Is.Not.EqualTo(previousText), "Clicking a slide button should change the visible slide.");
+                previousText = currentText;
+                await Task.Delay(3000);// allow transition
+            }
         }
 
 
