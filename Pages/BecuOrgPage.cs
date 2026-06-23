@@ -28,11 +28,12 @@ namespace PlaywrightReqnrollUIDotNet.Pages
         public ILocator _cdLink => _page.GetByRole(AriaRole.Link, new() { Name = "CD" });
         public ILocator _iraLink => _page.GetByRole(AriaRole.Link, new() { Name = "IRA" });
 
+        //Menu links to go Investment pages
         public ILocator _planningInvestingMenu => _page.GetByRole(AriaRole.Link, new() { Name = "Planning & Investing" });
         public ILocator _investmentServicesLink => _page.GetByRole(AriaRole.Link,
                                     new() { Name = "Investment Services", Description = "Investment Management", Exact = true });
-
-
+        public ILocator _investmentCalculatorsLink => _page.GetByRole(AriaRole.Link,
+                                    new() { Name = "Investment Calculators", Description = "Investment Calculators", Exact = true });
 
 
         //Carousel
